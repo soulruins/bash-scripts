@@ -2,7 +2,7 @@
 
 `weather_slack.sh + weather_facts.txt`
 #### Описание
-Погодный бот для Slack. Умеет отправлять прогноз на текущий и следующий день в канал Slack, данные о погоде берёт с gismeteo.ru
+Погодный бот для [Slack](https://slack.com). Умеет отправлять прогноз на текущий и следующий день в канал Slack, данные о погоде берёт с gismeteo.ru
 #### Установка
 1. Скопируйте в удобную для вас директорию файл `weather_slack.sh` (например `/home`)
 2. Получите **Slack WEB API** (token) здесь https://api.slack.com/web
