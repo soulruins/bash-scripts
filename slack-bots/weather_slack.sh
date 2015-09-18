@@ -1,18 +1,19 @@
 #!/bin/bash
 
 #set -x
-# Пример использования:
-# ./weather_slack.sh "general" "today" "Погода на СЕГОДНЯ"
-# ./weather_slack.sh "general" "tommorow" "Погода на ЗАВТРА"
-token="<your_api>" #укажите свой API-ключ https://api.slack.com/web
-city_code="4368" # код города, по умолчанию - Москва (4368)
-INFO_URL="https://slack-files.com" # ваша информация о боте (ссылка)
-fact_file="/home/weather_facts.txt" # местоположение файла с фактами о погоде, если они нужны (каждый факт с новой строки, требует утилиты randomize-lines)
+# Р”РѕРјР°С€РЅР°СЏСЏ СЃС‚СЂР°РЅРёС†Р°: https://github.com/soulruins/bash-scripts/tree/master/slack-bots
+# РџСЂРёРјРµСЂ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ:
+# ./weather_slack.sh "general" "today" "РџРѕРіРѕРґР° РЅР° РЎР•Р“РћР”РќРЇ"
+# ./weather_slack.sh "general" "tommorow" "РџРѕРіРѕРґР° РЅР° Р—РђР’РўР Рђ"
+token="<your_api>" #СѓРєР°Р¶РёС‚Рµ СЃРІРѕР№ API-РєР»СЋС‡ https://api.slack.com/web
+city_code="4368" # РєРѕРґ РіРѕСЂРѕРґР°, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ - РњРѕСЃРєРІР° (4368)
+INFO_URL="https://slack-files.com" # РІР°С€Р° РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ Р±РѕС‚Рµ (СЃСЃС‹Р»РєР°)
+fact_file="/home/weather_facts.txt" # РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ С„Р°Р№Р»Р° СЃ С„Р°РєС‚Р°РјРё Рѕ РїРѕРіРѕРґРµ, РµСЃР»Рё РѕРЅРё РЅСѓР¶РЅС‹ (РєР°Р¶РґС‹Р№ С„Р°РєС‚ СЃ РЅРѕРІРѕР№ СЃС‚СЂРѕРєРё, С‚СЂРµР±СѓРµС‚ СѓС‚РёР»РёС‚С‹ randomize-lines)
 ###
-channel="$1" # имя канала, указывается первым параметром при запуске скрипта
-username="$3" # имя бота, указывается третьим параметром при запуске скрипта
+channel="$1" # РёРјСЏ РєР°РЅР°Р»Р°, СѓРєР°Р·С‹РІР°РµС‚СЃСЏ РїРµСЂРІС‹Рј РїР°СЂР°РјРµС‚СЂРѕРј РїСЂРё Р·Р°РїСѓСЃРєРµ СЃРєСЂРёРїС‚Р°
+username="$3" # РёРјСЏ Р±РѕС‚Р°, СѓРєР°Р·С‹РІР°РµС‚СЃСЏ С‚СЂРµС‚СЊРёРј РїР°СЂР°РјРµС‚СЂРѕРј РїСЂРё Р·Р°РїСѓСЃРєРµ СЃРєСЂРёРїС‚Р°
 #icon=":weather:"
-### лучше не менять
+### Р»СѓС‡С€Рµ РЅРµ РјРµРЅСЏС‚СЊ
 tmpdir="/tmp"
 tmp_file1="$tmpdir/forecast.txt"
 tmp_file2="$tmpdir/forecast2.txt"
@@ -28,62 +29,62 @@ fi
 if [ -f $fact_file ]; then
 	fact=$(rl -c1 $fact_file)
 fi
-### приступим
-echo "*Текущие погодные условия*" > $tmp_file1
+### РїСЂРёСЃС‚СѓРїРёРј
+echo "*РўРµРєСѓС‰РёРµ РїРѕРіРѕРґРЅС‹Рµ СѓСЃР»РѕРІРёСЏ*" > $tmp_file1
 CITY_URL="https://www.gismeteo.ru/city/daily/$city_code/"
 curl $CITY_URL 2>/dev/null \
-| sed -nre '/section higher/,/мм рт. ст./p' \
-| sed -r 's/(.*)class="png" title="(.*)" style="background-image: url\(\/\/(.*)\)"><br \/><\/dt>/> Иконка: \3/' \
+| sed -nre '/section higher/,/РјРј СЂС‚. СЃС‚./p' \
+| sed -r 's/(.*)class="png" title="(.*)" style="background-image: url\(\/\/(.*)\)"><br \/><\/dt>/> РРєРѕРЅРєР°: \3/' \
 | sed -r '/section higher|cloudness|wicon wind|crumb|scity|\/div|value m_temp f|m_wind mih|m_wind kmh|\/dl|class="temp|wicon barp|dt/d' \
 | sed 's/+/%2B/' \
-| sed -r 's/(.*)class="type(.*)>(.*)<\/h2>/> Город: \3/' \
-| sed -r 's/(.*)<dd(.*)td>(.*)<\/td(.*)\/dd>/> Погода: \3/' \
-| sed -r 's/(.*)<dd class=(.*)>(.*)<span class="meas(.*)span><\/dd>/> Температура воздуха: *\3 C*/' \
-| sed -r 's/(.*)value m_wind ms(.*)>(.*)<span class="unit">(.*)<\/span><\/dd>/> Ветер: \3 \4/' \
-| sed -r 's/(.*)value m_press torr(.*)>(.*)<(.*)>(.*)<\/span><\/dd>/> Давление: \3 \5/' \
+| sed -r 's/(.*)class="type(.*)>(.*)<\/h2>/> Р“РѕСЂРѕРґ: \3/' \
+| sed -r 's/(.*)<dd(.*)td>(.*)<\/td(.*)\/dd>/> РџРѕРіРѕРґР°: \3/' \
+| sed -r 's/(.*)<dd class=(.*)>(.*)<span class="meas(.*)span><\/dd>/> РўРµРјРїРµСЂР°С‚СѓСЂР° РІРѕР·РґСѓС…Р°: *\3 C*/' \
+| sed -r 's/(.*)value m_wind ms(.*)>(.*)<span class="unit">(.*)<\/span><\/dd>/> Р’РµС‚РµСЂ: \3 \4/' \
+| sed -r 's/(.*)value m_press torr(.*)>(.*)<(.*)>(.*)<\/span><\/dd>/> Р”Р°РІР»РµРЅРёРµ: \3 \5/' \
 >> $tmp_file1
-icon="$(cat $tmp_file1 | grep "Иконка:" | sed -r 's/> Иконка:\s(.*)/\1/')"
+icon="$(cat $tmp_file1 | grep "РРєРѕРЅРєР°:" | sed -r 's/> РРєРѕРЅРєР°:\s(.*)/\1/')"
 sed -i '3d' $tmp_file1
 echo "*$username*" >> $tmp_file1
-printf "> *Прогноз на ночь*\n#NIGHT\n" >> $tmp_file1
-printf "> *Прогноз на утро*\n#MORNING\n" >> $tmp_file1
-printf "> *Прогноз на день*\n#DAY\n" >> $tmp_file1
-printf "> *Прогноз на вечер*\n#EVEN\n" >> $tmp_file1
+printf "> *РџСЂРѕРіРЅРѕР· РЅР° РЅРѕС‡СЊ*\n#NIGHT\n" >> $tmp_file1
+printf "> *РџСЂРѕРіРЅРѕР· РЅР° СѓС‚СЂРѕ*\n#MORNING\n" >> $tmp_file1
+printf "> *РџСЂРѕРіРЅРѕР· РЅР° РґРµРЅСЊ*\n#DAY\n" >> $tmp_file1
+printf "> *РџСЂРѕРіРЅРѕР· РЅР° РІРµС‡РµСЂ*\n#EVEN\n" >> $tmp_file1
 curl $CITY_URL 2>/dev/null \
 | sed -nre "/$firstday/,/$lastday/p" \
 | sed -r '/clicon/d' \
-| sed -r 's/(.*)Ночь(.*)<\/th>/> *Прогноз на ночь*/' \
-| sed -r 's/(.*)Утро(.*)<\/th>/> *Прогноз на утро*/' \
-| sed -r 's/(.*)День(.*)<\/th>/> *Прогноз на день*/' \
-| sed -r 's/(.*)Вечер(.*)<\/th>/> *Прогноз на вечер*/' \
+| sed -r 's/(.*)РќРѕС‡СЊ(.*)<\/th>/> *РџСЂРѕРіРЅРѕР· РЅР° РЅРѕС‡СЊ*/' \
+| sed -r 's/(.*)РЈС‚СЂРѕ(.*)<\/th>/> *РџСЂРѕРіРЅРѕР· РЅР° СѓС‚СЂРѕ*/' \
+| sed -r 's/(.*)Р”РµРЅСЊ(.*)<\/th>/> *РџСЂРѕРіРЅРѕР· РЅР° РґРµРЅСЊ*/' \
+| sed -r 's/(.*)Р’РµС‡РµСЂ(.*)<\/th>/> *РџСЂРѕРіРЅРѕР· РЅР° РІРµС‡РµСЂ*/' \
 | sed -r 's/(.*)class="cltext">(.*)<\/td>/> \2 :white_small_square:/' \
 | sed -r 's/(.*)<td class="temp"><span class=(.*)>(.*)<\/span><span class=(.*)>(.*)<\/span><\/td>/*\3 C* :white_small_square:/' \
-| sed -r 's/(.*)<td><span class=(.*)m_press(.*)>(.*)<\/span><span class=(.*)m_press(.*)>(.*)<\/span><span class=(.*)m_press(.*)>(.*)<\/span><\/td>/Давление: \4 мм рт. ст. :white_small_square:/' \
-| sed -r 's/(.*)<td><dl class="wind"><dt class=(.*) title="(.*)">(.*)<\/dt><dd><span class=(.*)m_wind(.*)>(.*)<\/span><span class=(.*)m_wind(.*)>(.*)<\/span><span class=(.*)m_wind(.*)>(.*)<\/span><\/dd><\/dl><\/td>/Ветер: \3, \7 м%2Fс :white_small_square:/' \
-| sed -r 's/(.*)<td>([0-9]{2})<\/td>/Влажность: \2%/' \
-| grep 'Прогноз на\|Подробнее:\|:white_small_square:\|Давление:\|Влажность:\|Ветер:' \
+| sed -r 's/(.*)<td><span class=(.*)m_press(.*)>(.*)<\/span><span class=(.*)m_press(.*)>(.*)<\/span><span class=(.*)m_press(.*)>(.*)<\/span><\/td>/Р”Р°РІР»РµРЅРёРµ: \4 РјРј СЂС‚. СЃС‚. :white_small_square:/' \
+| sed -r 's/(.*)<td><dl class="wind"><dt class=(.*) title="(.*)">(.*)<\/dt><dd><span class=(.*)m_wind(.*)>(.*)<\/span><span class=(.*)m_wind(.*)>(.*)<\/span><span class=(.*)m_wind(.*)>(.*)<\/span><\/dd><\/dl><\/td>/Р’РµС‚РµСЂ: \3, \7 Рј%2FСЃ :white_small_square:/' \
+| sed -r 's/(.*)<td>([0-9]{2})<\/td>/Р’Р»Р°Р¶РЅРѕСЃС‚СЊ: \2%/' \
+| grep 'РџСЂРѕРіРЅРѕР· РЅР°\|РџРѕРґСЂРѕР±РЅРµРµ:\|:white_small_square:\|Р”Р°РІР»РµРЅРёРµ:\|Р’Р»Р°Р¶РЅРѕСЃС‚СЊ:\|Р’РµС‚РµСЂ:' \
 > $tmp_file3
 if [ -f $fact_file ]; then
-	echo "*Интересный факт о погоде:* _ $fact _" >> $tmp_file1
+	echo "*РРЅС‚РµСЂРµСЃРЅС‹Р№ С„Р°РєС‚ Рѕ РїРѕРіРѕРґРµ:* _ $fact _" >> $tmp_file1
 fi
-printf "\n:black_small_square: <$CITY_URL|Подробный прогноз> :black_small_square: <$INFO_URL|Что это?>" >> $tmp_file1
+printf "\n:black_small_square: <$CITY_URL|РџРѕРґСЂРѕР±РЅС‹Р№ РїСЂРѕРіРЅРѕР·> :black_small_square: <$INFO_URL|Р§С‚Рѕ СЌС‚Рѕ?>" >> $tmp_file1
 cat $tmp_file3 \
 | sed 's/+/%2B/' \
-| sed 's/Пасмурно\s/:cloud: Пасмурно/' \
-| sed 's/Пасмурно, небольшой дождь\s/:cloud: :umbrella: Пасмурно, небольшой дождь/' \
-| sed 's/Облачно\s/:partly_sunny: Облачно/' \
-| sed 's/Малооблачно\s/:partly_sunny: Малооблачно/' \
-| sed 's/Малооблачно, небольшой дождь\s/:partly_sunny: :umbrella: Малооблачно, небольшой дождь/' \
-| sed 's/Малооблачно, гроза\s/:partly_sunny: :zap: Малооблачно, гроза/' \
-| sed 's/Облачно, небольшой дождь\s/:partly_sunny: :umbrella: Облачно, небольшой дождь/' \
-| sed 's/Ясно\s/:sunny: Ясно/' \
-| sed 's/Ясно, дымка\s/:sunny: :partly_sunny: Ясно, дымка/' \
+| sed 's/РџР°СЃРјСѓСЂРЅРѕ\s/:cloud: РџР°СЃРјСѓСЂРЅРѕ/' \
+| sed 's/РџР°СЃРјСѓСЂРЅРѕ, РЅРµР±РѕР»СЊС€РѕР№ РґРѕР¶РґСЊ\s/:cloud: :umbrella: РџР°СЃРјСѓСЂРЅРѕ, РЅРµР±РѕР»СЊС€РѕР№ РґРѕР¶РґСЊ/' \
+| sed 's/РћР±Р»Р°С‡РЅРѕ\s/:partly_sunny: РћР±Р»Р°С‡РЅРѕ/' \
+| sed 's/РњР°Р»РѕРѕР±Р»Р°С‡РЅРѕ\s/:partly_sunny: РњР°Р»РѕРѕР±Р»Р°С‡РЅРѕ/' \
+| sed 's/РњР°Р»РѕРѕР±Р»Р°С‡РЅРѕ, РЅРµР±РѕР»СЊС€РѕР№ РґРѕР¶РґСЊ\s/:partly_sunny: :umbrella: РњР°Р»РѕРѕР±Р»Р°С‡РЅРѕ, РЅРµР±РѕР»СЊС€РѕР№ РґРѕР¶РґСЊ/' \
+| sed 's/РњР°Р»РѕРѕР±Р»Р°С‡РЅРѕ, РіСЂРѕР·Р°\s/:partly_sunny: :zap: РњР°Р»РѕРѕР±Р»Р°С‡РЅРѕ, РіСЂРѕР·Р°/' \
+| sed 's/РћР±Р»Р°С‡РЅРѕ, РЅРµР±РѕР»СЊС€РѕР№ РґРѕР¶РґСЊ\s/:partly_sunny: :umbrella: РћР±Р»Р°С‡РЅРѕ, РЅРµР±РѕР»СЊС€РѕР№ РґРѕР¶РґСЊ/' \
+| sed 's/РЇСЃРЅРѕ\s/:sunny: РЇСЃРЅРѕ/' \
+| sed 's/РЇСЃРЅРѕ, РґС‹РјРєР°\s/:sunny: :partly_sunny: РЇСЃРЅРѕ, РґС‹РјРєР°/' \
 > $tmp_file2
 ###
-night="$(grep -A5 "ночь" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
-morning="$(grep -A5 "утро" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
-day="$(grep -A5 "день" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
-even="$(grep -A5 "вечер" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
+night="$(grep -A5 "РЅРѕС‡СЊ" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
+morning="$(grep -A5 "СѓС‚СЂРѕ" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
+day="$(grep -A5 "РґРµРЅСЊ" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
+even="$(grep -A5 "РІРµС‡РµСЂ" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
 ###
 cat $tmp_file1 | sed 's/#NIGHT/'"$night"'/;s/#MORNING/'"$morning"'/;s/#DAY/'"$day"'/;s/#EVEN/'"$even"'/' > $tmp_file2
 ###
