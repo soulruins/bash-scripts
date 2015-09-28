@@ -70,15 +70,12 @@ fi
 printf "\n:black_small_square: <$CITY_URL|Подробный прогноз> :black_small_square: <$INFO_URL|Что это?>" >> $tmp_file1
 cat $tmp_file3 \
 | sed 's/+/%2B/' \
-| sed 's/Пасмурно\s/:cloud: Пасмурно/' \
-| sed 's/Пасмурно, небольшой дождь\s/:cloud: :umbrella: Пасмурно, небольшой дождь/' \
-| sed 's/Облачно\s/:partly_sunny: Облачно/' \
-| sed 's/Малооблачно\s/:partly_sunny: Малооблачно/' \
-| sed 's/Малооблачно, небольшой дождь\s/:partly_sunny: :umbrella: Малооблачно, небольшой дождь/' \
-| sed 's/Малооблачно, гроза\s/:partly_sunny: :zap: Малооблачно, гроза/' \
-| sed 's/Облачно, небольшой дождь\s/:partly_sunny: :umbrella: Облачно, небольшой дождь/' \
-| sed 's/Ясно\s/:sunny: Ясно/' \
-| sed 's/Ясно, дымка\s/:sunny: :partly_sunny: Ясно, дымка/' \
+| sed '/\Sасмурно/{s/^>/> :cloud:/}' \
+| sed '/\Sблачно\|\Sалооблачно\|\Sымка/{s/^>/> :partly_sunny:/}' \
+| sed '/\Sсно/{s/^>/> :sunny:/}' \
+| sed '/\Sнег/{s/^>/> :snowflake:/}' \
+| sed '/\Sождь\|\Sивень/{s/^>/> :umbrella:/}' \
+| sed '/\Sроза/{s/^>/> :zap:/}' \
 > $tmp_file2
 ###
 night="$(grep -A5 "ночь" $tmp_file2 | tail -5 | sed ':a;N;$!ba;s/\n/ /g')"
