@@ -37,6 +37,7 @@ curl $CITY_URL 2>/dev/null \
 | sed -r 's/(.*)class="png" title="(.*)" style="background-image: url\(\/\/(.*)\)"><br \/><\/dt>/> Иконка: \3/' \
 | sed -r '/section higher|cloudness|wicon wind|crumb|scity|\/div|value m_temp f|m_wind mih|m_wind kmh|\/dl|class="temp|wicon barp|dt/d' \
 | sed 's/+/%2B/' \
+| sed 's/&minus;/%2D/' \
 | sed -r 's/(.*)class="type(.*)>(.*)<\/h2>/> Город: \3/' \
 | sed -r 's/(.*)<dd(.*)td>(.*)<\/td(.*)\/dd>/> Погода: \3/' \
 | sed -r 's/(.*)<dd class=(.*)>(.*)<span class="meas(.*)span><\/dd>/> Температура воздуха: *\3 C*/' \
@@ -70,6 +71,7 @@ fi
 printf "\n:black_small_square: <$CITY_URL|Подробный прогноз> :black_small_square: <$INFO_URL|Что это?>" >> $tmp_file1
 cat $tmp_file3 \
 | sed 's/+/%2B/' \
+| sed 's/&minus;/%2D/' \
 | sed '/\Sасмурно/{s/^>/> :cloud:/}' \
 | sed '/\Sблачно\|\Sалооблачно\|\Sымка/{s/^>/> :partly_sunny:/}' \
 | sed '/\Sсно/{s/^>/> :sunny:/}' \
